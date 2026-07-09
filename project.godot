@@ -19,7 +19,7 @@ boot_splash/bg_color=Color(0.04, 0.05, 0.08, 1)
 
 [display]
 
-window/handheld/orientation=1
+window/handheld/orientation=2
 window/size/viewport_width=352
 window/size/viewport_height=192
 window/size/window_width_override=1152

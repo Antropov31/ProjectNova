@@ -17,17 +17,42 @@ var _duck := 1.0
 var _intensity := 1.0
 
 func _ready() -> void:
+	_setup_mix()
 	for i in range(14):
 		var p := AudioStreamPlayer.new()
+		p.bus = "SFX"
 		add_child(p)
 		_pool.append(p)
 	_music = AudioStreamPlayer.new()
+	_music.bus = "Music"
 	add_child(_music)
 	_apply_music_vol()
 	_build_all_sfx()
 
+func _setup_mix() -> void:
+	# Dedicated buses keep procedural sound warm and controlled on tiny speakers.
+	for bus_name in ["Music", "SFX"]:
+		if AudioServer.get_bus_index(bus_name) < 0:
+			AudioServer.add_bus()
+			AudioServer.set_bus_name(AudioServer.bus_count - 1, bus_name)
+	var music_bus: int = AudioServer.get_bus_index("Music")
+	var sfx_bus: int = AudioServer.get_bus_index("SFX")
+	AudioServer.set_bus_send(music_bus, "Master")
+	AudioServer.set_bus_send(sfx_bus, "Master")
+	AudioServer.set_bus_volume_db(music_bus, -2.5)
+	AudioServer.set_bus_volume_db(sfx_bus, -1.5)
+	var room := AudioEffectReverb.new()
+	room.room_size = 0.32; room.damping = 0.78; room.wet = 0.10; room.dry = 0.92
+	AudioServer.add_bus_effect(music_bus, room)
+	var polish := AudioEffectReverb.new()
+	polish.room_size = 0.18; polish.damping = 0.86; polish.wet = 0.035; polish.dry = 0.96
+	AudioServer.add_bus_effect(sfx_bus, polish)
+	var comp := AudioEffectCompressor.new()
+	comp.threshold = -12.0; comp.ratio = 3.0; comp.attack_us = 18000.0; comp.release_ms = 180.0; comp.gain = 1.5
+	AudioServer.add_bus_effect(sfx_bus, comp)
+
 func _apply_music_vol() -> void:
-	_music.volume_db = linear_to_db(clamp(0.32 * master * _intensity * _duck, 0.0001, 1.0))
+	_music.volume_db = linear_to_db(clamp(0.25 * master * _intensity * _duck, 0.0001, 1.0))
 
 # ---------------------------------------------------------------- helpers
 
@@ -72,7 +97,7 @@ func _add_tone(buf: PackedFloat32Array, at: int, freq: float, dur: float, wave: 
 			_: s = sin(ph * TAU); s2 = sin(ph2 * TAU)
 		var mixed := s * 0.7 + s2 * 0.3
 		# soft low-pass: blend toward a sine of the same phase for less harshness
-		mixed = mixed * 0.75 + sin(ph * TAU) * 0.25
+		mixed = mixed * 0.52 + sin(ph * TAU) * 0.48
 		var env := exp(-t * decay)
 		if i < atk:
 			env *= float(i) / float(atk)
@@ -306,7 +331,9 @@ func sfx(name: String) -> void:
 	var p: AudioStreamPlayer = _pool[_idx]
 	_idx = (_idx + 1) % _pool.size()
 	p.stream = st
-	p.volume_db = linear_to_db(clamp(master, 0.0001, 1.0))
+	var gain: float = {"shoot":0.72, "ehit":0.68, "bosshit":0.78, "glitch":0.72, "explode":0.82, "hurt":0.84, "blip":0.70}.get(name, 0.88)
+	p.pitch_scale = randf_range(0.985, 1.015) if name in ["shoot", "ehit", "pickup"] else 1.0
+	p.volume_db = linear_to_db(clamp(master * gain, 0.0001, 1.0))
 	p.play()
 
 # ---------------------------------------------------------------- music
@@ -323,7 +350,7 @@ func play_music(mood: String) -> void:
 
 func set_intensity(high: bool) -> void:
 	_music.pitch_scale = 1.06 if high else 1.0
-	_intensity = 1.38 if high else 1.0
+	_intensity = 1.20 if high else 1.0
 	_apply_music_vol()
 
 func set_duck(on: bool) -> void:

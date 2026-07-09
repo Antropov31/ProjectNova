@@ -2403,38 +2403,50 @@ func _draw_death() -> void:
 			CutScenes.ctext(self, "NOVA: " + death_line, W * 0.5, H * 0.52, 8, Color(0.7, 0.9, 0.95, ta))
 		CutScenes.ctext(self, T("Зачищено комнат: ", "Rooms cleared: ") + str(rooms_cleared) + "    " + T("Ядра: ", "Cores: ") + str(meta_cores), W * 0.5, H * 0.62, 7, Color(0.7, 0.8, 0.9, ta))
 		if int(menu_t * 2.0) % 2 == 0 and dt > 1.4:
-			CutScenes.ctext(self, T("SPACE - начать заново", "SPACE - restart"), W * 0.5, H - 12.0, 8, Color(0.6, 0.75, 0.85, ta))
+			CutScenes.ctext(self, T("КОСНИСЬ, ЧТОБЫ НАЧАТЬ ЗАНОВО", "SPACE - restart"), W * 0.5, H - 12.0, 8, Color(0.6, 0.75, 0.85, ta))
 
 func _draw_nova_cut() -> void:
-	var W: float = COLS * TILE
-	var H: float = ROWS * TILE
-	var t: float = nova_cut_t
-	draw_rect(Rect2(0, 0, W, H), Color(0.02, 0.03, 0.05, 0.92))
-	draw_rect(Rect2(0, 0, W, 16), Color(0, 0, 0, 0.95))
-	draw_rect(Rect2(0, H - 16, W, 16), Color(0, 0, 0, 0.95))
-	var cx: float = W * 0.5
-	var cy: float = H * 0.46
-	# a dead desk silhouette
-	draw_rect(Rect2(cx - 40, cy + 14, 80, 8), Color(0.10, 0.10, 0.14))
-	draw_rect(Rect2(cx - 36, cy + 22, 6, 10), Color(0.08, 0.08, 0.11))
-	draw_rect(Rect2(cx + 30, cy + 22, 6, 10), Color(0.08, 0.08, 0.11))
-	# a tiny blue light flickers, then boots into Nova
-	var boot: float = clamp((t - 1.2) / 2.2, 0.0, 1.0)
-	if t < 1.4:
-		var fl: float = 0.3 + 0.7 * abs(sin(t * 9.0))
-		draw_circle(Vector2(cx, cy + 8), 2.0, Color(0.4, 0.9, 1.0, fl))
-		draw_circle(Vector2(cx, cy + 8), 5.0, Color(0.4, 0.9, 1.0, 0.12 * fl))
+	var W: float = COLS*TILE; var H: float = ROWS*TILE; var t: float = nova_cut_t
+	# Abandoned office, staged like a close cinematic shot.
+	draw_rect(Rect2(0,0,W,H),Color(0.012,0.02,0.035,1.0))
+	var cold: float = 0.04+0.025*sin(t*0.8)
+	for i in range(5):
+		var wx:float=12+i*74; draw_rect(Rect2(wx,20,55,65),Color(0.025,0.055,0.085,1.0)); draw_rect(Rect2(wx,20,55,65),Color(0.18,0.35,0.48,0.28),false,1.0)
+		for r in range(5): draw_line(Vector2(wx+8,29+r*11),Vector2(wx+47,29+r*11),Color(0.22,0.46,0.6,cold),1.0)
+	# hanging cables and dead ceiling lights
+	for i in range(7):
+		var x:float=22+i*52; draw_line(Vector2(x,0),Vector2(x+sin(i)*7,23+(i%3)*7),Color(0.1,0.14,0.18,0.9),2.0)
+		draw_circle(Vector2(x+sin(i)*7,25+(i%3)*7),2,Color(0.18,0.2,0.22,0.7))
+	# debris gives foreground depth
+	for i in range(18):
+		var dx:float=float((i*71)%352); var dy:float=112+float((i*29)%58)
+		draw_line(Vector2(dx,dy),Vector2(dx+3+(i%4),dy-1),Color(0.12,0.16,0.2,0.55),1.0)
+	var cx:float=W*0.5; var cy:float=H*0.49
+	# desk, tipped chair, broken monitor
+	draw_rect(Rect2(cx-52,cy+17,104,8),Color(0.075,0.08,0.105)); draw_rect(Rect2(cx-48,cy+25,6,19),Color(0.045,0.05,0.07)); draw_rect(Rect2(cx+42,cy+25,6,19),Color(0.045,0.05,0.07))
+	draw_colored_polygon(PackedVector2Array([Vector2(cx-75,cy+34),Vector2(cx-57,cy+27),Vector2(cx-50,cy+42),Vector2(cx-69,cy+45)]),Color(0.06,0.07,0.09))
+	draw_rect(Rect2(cx+20,cy+3,22,14),Color(0.04,0.05,0.07)); draw_line(Vector2(cx+22,cy+5),Vector2(cx+39,cy+15),Color(0.25,0.35,0.4,0.45),1.0)
+	var boot:float=clamp((t-0.8)/2.5,0.0,1.0); var reveal:float=boot*boot*(3.0-2.0*boot)
+	# expanding light reveals Nova piece by piece
+	var light_pos:=Vector2(cx-8,cy+12-reveal*18)
+	for rr in [42.0,28.0,14.0]: draw_circle(light_pos,rr*reveal,Color(0.28,0.82,1.0,0.018+0.02*reveal))
+	if t<1.15:
+		var fl:float=0.25+0.75*abs(sin(t*11.0)); draw_circle(Vector2(cx-8,cy+12),2,Color(0.35,0.9,1.0,fl)); draw_circle(Vector2(cx-8,cy+12),9,Color(0.35,0.9,1.0,0.08*fl))
 	else:
-		var ny: float = cy + 8.0 - boot * 10.0
-		CutScenes.draw_nova(self, cx, ny, t)
-		draw_circle(Vector2(cx, ny), 30.0 * boot, Color(0.3, 0.85, 1.0, 0.06))
-	var cap := ""
-	if t < 1.4: cap = "Среди мёртвых машин - один синий огонёк."
-	elif t < 3.2: cap = "Он не заражён. Он прятался. Ждал."
-	else: cap = "NOVA оживает. Ты больше не один."
-	CutScenes.ctext(self, cap, W * 0.5, H - 26.0, 8, Color(0.75, 0.92, 1.0))
-	if int(menu_t * 2.0) % 2 == 0:
-		draw_string(font, Vector2(W - 84, H - 5), "SPACE - дальше", HORIZONTAL_ALIGNMENT_LEFT, -1, 6, Color(0.5, 0.6, 0.7))
+		CutScenes.draw_nova(self,light_pos.x,light_pos.y,t)
+		# boot diagnostics orbit her
+		if reveal<0.92:
+			for i in range(8):
+				var ang:float=TAU*i/8.0+t; draw_rect(Rect2(light_pos+Vector2(cos(ang),sin(ang))*30-Vector2.ONE,Vector2(2,2)),Color(0.4,0.95,1.0,0.55*(1.0-reveal)))
+	var cap:String
+	if t<1.15: cap="Среди мёртвых машин отвечает один синий огонёк."
+	elif t<2.7: cap="Система N.O.V.A. // аварийный запуск"
+	elif t<4.1: cap="Она пряталась здесь одна. И всё это время ждала человека."
+	else: cap="NOVA: ты настоящий? тогда я иду с тобой."
+	draw_rect(Rect2(0,H-42,W,31),Color(0.015,0.025,0.04,0.94)); draw_rect(Rect2(0,H-42,W,1),Color(0.32,0.82,1.0,0.7))
+	CutScenes.ctext(self,cap,W*0.5,H-25,8,Color(0.76,0.94,1.0))
+	draw_rect(Rect2(0,0,W,11),Color(0.005,0.008,0.015,0.98)); draw_rect(Rect2(0,H-11,W,11),Color(0.005,0.008,0.015,0.98))
+	if int(menu_t*2.0)%2==0: draw_string(font,Vector2(W-105,H-4),"КОСНИСЬ, ЧТОБЫ ПРОДОЛЖИТЬ",HORIZONTAL_ALIGNMENT_LEFT,-1,6,Color(0.52,0.68,0.76))
 
 func _draw_ending() -> void:
 	var W: float = COLS * TILE
@@ -2468,7 +2480,7 @@ func _draw_ending() -> void:
 		else: cap = "Свет в её глазах гаснет. Навсегда."
 		CutScenes.ctext(self, cap, cx, H - 24.0, 8, Color(0.8, 0.92, 1.0))
 		if int(menu_t * 2.0) % 2 == 0:
-			draw_string(font, Vector2(W - 92, H - 6), "SPACE - пропустить", HORIZONTAL_ALIGNMENT_LEFT, -1, 6, Color(0.5, 0.6, 0.7))
+			draw_string(font, Vector2(W - 92, H - 6), "КОСНИСЬ, ЧТОБЫ ПРОПУСТИТЬ", HORIZONTAL_ALIGNMENT_LEFT, -1, 6, Color(0.5, 0.6, 0.7))
 	else:
 		_draw_end_credits(W, H, t - 7.0)
 
@@ -2489,7 +2501,7 @@ func _draw_end_credits(W: float, H: float, ct: float) -> void:
 		var col := Color(0.7, 0.95, 1.0, fade) if i == 0 else Color(0.8, 0.88, 0.96, fade * 0.9)
 		CutScenes.ctext(self, String(lines[i]), W * 0.5, yy, sz, col)
 	if int(menu_t * 2.0) % 2 == 0:
-		draw_string(font, Vector2(W - 118, H - 5), "SPACE - в меню", HORIZONTAL_ALIGNMENT_LEFT, -1, 6, Color(0.5, 0.6, 0.7))
+		draw_string(font, Vector2(W - 118, H - 5), "КОСНИСЬ, ЧТОБЫ ВЫЙТИ", HORIZONTAL_ALIGNMENT_LEFT, -1, 6, Color(0.5, 0.6, 0.7))
 
 func _draw_credits(W: float, H: float) -> void:
 	# a slow memorial scroll of the fallen; the TRUTH ending honours them all

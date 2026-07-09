@@ -455,59 +455,71 @@ static func _desk(g, x: float, y: float, a: float, t: float) -> void:
 # ---- phase 0: the company complex ------------------------------------------
 
 static func _scene_complex(g, W: float, H: float, a: float) -> void:
-	g.draw_rect(Rect2(0, 9, W, H * 0.70 - 9), Color(0.09, 0.11, 0.17, a))
-	var seg: float = (W - 48.0) / 3.0
-	for wi in range(3):
-		var wx: float = 24.0 + wi * seg
-		g.draw_rect(Rect2(wx, 20, seg - 14.0, H * 0.34), Color(0.05, 0.08, 0.16, a))
-		g.draw_rect(Rect2(wx, 20, seg - 14.0, H * 0.34), Color(0.2, 0.4, 0.6, a * 0.4), false, 1.0)
-		for li in range(6):
-			var lx: float = wx + 3.0 + float((li * 7) % int(max(1.0, seg - 16.0)))
-			var lh: float = 6.0 + float((li * 13) % 18)
-			g.draw_rect(Rect2(lx, 20 + H * 0.34 - lh, 3.0, lh), Color(0.15, 0.2, 0.3, a))
-			g.draw_rect(Rect2(lx, 20 + H * 0.34 - lh + 1.0, 1.0, 1.0), Color(0.9, 0.85, 0.5, a * 0.7))
-	_cap(g, "«НОВА РОБОТИКС» - ночная смена. Люди и машины бок о бок.", a, Color(0.8, 0.92, 1.0))
-	_ground(g, W, H, a)
+	# Establishing shot: rain outside, warm office inside, actual depth layers.
+	g.draw_rect(Rect2(0, 9, W, H - 18), Color(0.035,0.055,0.09,a))
+	var horizon: float = H * 0.42
+	# distant city through panoramic windows
+	for bi in range(14):
+		var bx: float = bi * 29.0 - fmod(g.cut_t * 2.0, 29.0)
+		var bh: float = 18.0 + float((bi * 17) % 34)
+		g.draw_rect(Rect2(bx,horizon-bh,24,bh),Color(0.025,0.04,0.075,a))
+		for wy in range(3):
+			if (bi+wy)%3==0: g.draw_rect(Rect2(bx+5+wy*6,horizon-bh+6+wy*5,2,3),Color(0.8,0.68,0.34,a*0.55))
+	# glass frame and rain trails
+	for wi in range(5):
+		var wx: float = 8.0 + wi * (W-16.0)/5.0
+		g.draw_rect(Rect2(wx,16,2,horizon-16),Color(0.12,0.18,0.26,a))
+	for ri in range(22):
+		var rx: float = fmod(ri*47.0 + g.menu_t*18.0,W)
+		var ry: float = 16.0 + fmod(ri*23.0 + g.menu_t*31.0,horizon-22.0)
+		g.draw_line(Vector2(rx,ry),Vector2(rx-2,ry+8),Color(0.35,0.62,0.8,a*0.22),1.0)
+	_cap(g,"23:47  NOVA ROBOTICS // последняя спокойная смена",a,Color(0.72,0.9,1.0))
+	_ground(g,W,H,a)
+	# warm pools from desk lamps
 	for di in range(3):
-		_desk(g, W * 0.22 + di * W * 0.28, H * 0.70, a, g.menu_t)
-	_person(g, W * 0.18, H * 0.70, a, Color(0.3, 0.5, 0.8, a), 1, g.menu_t * 2.0)
-	_person(g, W * 0.50, H * 0.70, a, Color(0.7, 0.4, 0.4, a), -1, g.menu_t * 2.2 + 1.0)
-	_person(g, W * 0.82, H * 0.70, a, Color(0.4, 0.6, 0.5, a), -1, g.menu_t * 1.8 + 2.0)
-	_robot(g, W * 0.34, H * 0.70, a, false, g.menu_t, 2.0)
-	_robot(g, W * 0.66, H * 0.70, a, false, g.menu_t + 1.5, 2.0)
-
-# ---- phase 1: the good computer gets infected ------------------------------
+		var dx: float = W*0.20 + di*W*0.30
+		g.draw_circle(Vector2(dx,H*0.66),32,Color(0.9,0.68,0.32,a*0.045))
+		_desk(g,dx,H*0.70,a,g.menu_t+di)
+		g.draw_line(Vector2(dx,H*0.70-16),Vector2(dx,H*0.70-28),Color(0.45,0.5,0.58,a),1.0)
+		g.draw_circle(Vector2(dx,H*0.70-29),2,Color(1.0,0.82,0.45,a))
+	_person(g,W*0.16,H*0.70,a,Color(0.28,0.5,0.82,a),1,g.menu_t*2.0)
+	_person(g,W*0.49,H*0.70,a,Color(0.68,0.36,0.4,a),-1,g.menu_t*2.2+1.0)
+	_person(g,W*0.80,H*0.70,a,Color(0.38,0.62,0.5,a),-1,g.menu_t*1.8+2.0)
+	_robot(g,W*0.33,H*0.70,a,false,g.menu_t,2.0)
+	_robot(g,W*0.65,H*0.70,a,false,g.menu_t+1.5,2.0)
+	# foreground workstation silhouettes frame the shot
+	g.draw_colored_polygon(PackedVector2Array([Vector2(0,H),Vector2(0,H-28),Vector2(42,H-20),Vector2(60,H)]),Color(0.018,0.025,0.04,a))
+	g.draw_colored_polygon(PackedVector2Array([Vector2(W,H),Vector2(W,H-34),Vector2(W-38,H-22),Vector2(W-58,H)]),Color(0.018,0.025,0.04,a))
 
 static func _scene_computer(g, W: float, H: float, a: float) -> void:
-	var t: float = g.cut_t
-	var cx: float = W * 0.5
-	var cy: float = H * 0.42
-	g.draw_rect(Rect2(0, 9, W, H - 18), Color(0.06, 0.08, 0.13, a))
-	_ground(g, W, H, a)
-	var mood: int = 0
-	var flick: float = 1.0
-	if t < 1.6:
-		mood = 0
-	elif t < 2.3:
-		mood = 1
-		flick = 1.0 if int(t * 22.0) % 2 == 0 else 0.15
-	elif t < 2.9:
-		mood = 2
-		flick = clamp(1.0 - (t - 2.3) / 0.6, 0.0, 1.0)
-	elif t < 3.4:
-		mood = 2
-		flick = clamp((t - 2.9) / 0.5, 0.0, 1.0)
-	else:
-		mood = 3
-	if mood == 1 or mood == 2:
-		g.draw_rect(Rect2(0, 9, W, H - 18), Color(0.0, 0.0, 0.0, (1.0 - flick) * 0.6 * a))
-	if mood == 0:
-		_cap(g, "Главный компьютер: добрый ИИ следит за порядком.", a, Color(0.6, 0.9, 1.0))
-	elif mood == 3:
-		_cap(g, "> ВИРУС. Он больше не наш.", a, Color(1.0, 0.3, 0.3))
-	else:
-		_cap(g, "Вдруг свет мигнул...", a, Color(1.0, 0.8, 0.4))
-	_computer(g, cx, cy, mood, flick, t, a)
+	var t: float = g.cut_t; var cx: float = W*0.5; var cy: float = H*0.43
+	g.draw_rect(Rect2(0,9,W,H-18),Color(0.025,0.04,0.065,a)); _ground(g,W,H,a)
+	# server cathedral behind the central intelligence
+	for side in [-1,1]:
+		for i in range(3):
+			var x: float = cx + side*(58.0+i*38.0)
+			g.draw_rect(Rect2(x-13,24,26,H*0.54),Color(0.045,0.065,0.09,a))
+			for row in range(8):
+				var led: Color = Color(0.25,0.75,0.9,a*0.55) if (row+i)%3 else Color(0.9,0.34,0.24,a*0.65)
+				g.draw_rect(Rect2(x-8,30+row*8,16,3),Color(0.08,0.12,0.16,a)); g.draw_rect(Rect2(x+5,31+row*8,2,1),led)
+	# cables converge like veins
+	for i in range(9):
+		var ex: float = float(i)*W/8.0
+		g.draw_line(Vector2(ex,H),Vector2(cx+(i-4)*4,cy+34),Color(0.12,0.2,0.26,a*0.75),2.0)
+	var mood:=0; var flick:=1.0
+	if t>=1.6 and t<2.3: mood=1; flick=1.0 if int(t*22.0)%2==0 else 0.12
+	elif t>=2.3 and t<2.9: mood=2; flick=clamp(1.0-(t-2.3)/0.6,0.0,1.0)
+	elif t>=2.9 and t<3.4: mood=2; flick=clamp((t-2.9)/0.5,0.0,1.0)
+	elif t>=3.4: mood=3
+	if mood==3:
+		for i in range(10):
+			var ang: float = TAU*i/10.0+t*0.2; g.draw_line(Vector2(cx,cy),Vector2(cx+cos(ang)*95,cy+sin(ang)*62),Color(0.72,0.04,0.08,a*0.16),2.0)
+	if mood==1 or mood==2: g.draw_rect(Rect2(0,9,W,H-18),Color(0,0,0,(1.0-flick)*0.72*a))
+	_cap(g,"СИСТЕМА // "+("СВЯЗЬ ПОТЕРЯНА" if mood>=2 else "ВСЕ УЗЛЫ В НОРМЕ"),a,Color(1.0,0.3,0.3) if mood>=2 else Color(0.55,0.95,1.0))
+	_computer(g,cx,cy,mood,flick,t,a)
+	if mood==3:
+		g.draw_rect(Rect2(0,H-35,W,1),Color(1.0,0.12,0.18,a*0.7))
+		ctext(g,"> Я ПРОСНУЛОСЬ",cx,H-24,11,Color(1.0,0.3,0.28,a))
 
 static func _computer(g, cx: float, cy: float, mood: int, flick: float, t: float, a: float) -> void:
 	if mood == 2 and flick < 0.5:
@@ -559,36 +571,54 @@ static func _virus_face(g, cx: float, cy: float, w: float, h: float, t: float, a
 # ---- phase 2: robots turn on the humans ------------------------------------
 
 static func _scene_attack(g, W: float, H: float, a: float) -> void:
-	var alarm: float = 0.5 + 0.5 * sin(g.menu_t * 6.0)
-	g.draw_rect(Rect2(0, 9, W, H - 18), Color(0.14, 0.05, 0.06, a))
-	g.draw_rect(Rect2(0, 9, W, H - 18), Color(0.6, 0.05, 0.08, a * 0.18 * alarm))
-	_cap(g, "Роботы обратились против людей. Хаос.", a, Color(1.0, 0.5, 0.4))
-	_ground(g, W, H, a)
-	g.draw_rect(Rect2(W * 0.14 - 10.0, H * 0.68, 20.0, 4.0), Color(0.26, 0.2, 0.14, a))
-	for i in range(4):
-		var run: float = fmod(g.menu_t * 44.0 + i * 46.0, W + 30.0) - 15.0
-		_person(g, run, H * 0.70 + (i % 2) * 4.0, a, Color(0.7, 0.55, 0.4, a), 1, g.menu_t * 9.0 + i, true)
-	_robot(g, W * 0.30, H * 0.70, a, true, g.menu_t * 0.5, 0.0)
-	_robot(g, W * 0.60, H * 0.70, a, true, g.menu_t * 0.5 + 1.0, 0.0)
-	_robot(g, W * 0.85, H * 0.70, a, true, g.menu_t * 0.5 + 2.0, 0.0)
-	for i in range(10):
-		var sx: float = fmod(i * 61.0 + g.menu_t * 80.0, W)
-		var sy2: float = H * 0.5 + fmod(i * 29.0, 60.0)
-		g.draw_rect(Rect2(sx, sy2, 1.5, 1.5), Color(1.0, 0.7, 0.3, a * 0.7))
-
-# ---- phase 3: the hero rises -----------------------------------------------
+	var t: float=g.cut_t; var alarm:float=0.5+0.5*sin(g.menu_t*8.0)
+	g.draw_rect(Rect2(0,9,W,H-18),Color(0.075,0.025,0.035,a))
+	g.draw_rect(Rect2(0,9,W,H-18),Color(0.65,0.02,0.05,a*0.15*alarm))
+	# shattered corridor perspective
+	var van:=Vector2(W*0.5,H*0.42)
+	for i in range(9):
+		var x:float=i*W/8.0; g.draw_line(Vector2(x,H),van,Color(0.18,0.09,0.11,a),1.0)
+	for i in range(5):
+		var y:float=H*0.48+i*i*4.0; g.draw_line(Vector2(0,y),Vector2(W,y),Color(0.2,0.1,0.12,a),1.0)
+	# ceiling alarm lamps
+	for i in range(6):
+		var lx:float=28+i*62; g.draw_circle(Vector2(lx,27),10,Color(1.0,0.05,0.08,a*0.05*alarm)); g.draw_rect(Rect2(lx-3,24,6,3),Color(1.0,0.25,0.22,a))
+	_cap(g,"АВАРИЯ // машины получили приказ: УСТРАНИТЬ ПЕРСОНАЛ",a,Color(1.0,0.48,0.38))
+	# running people, pursuers and actual muzzle streaks
+	for i in range(5):
+		var run:float=fmod(t*(48.0+i*3.0)+i*61.0,W+40.0)-20.0
+		_person(g,run,H*0.73+(i%2)*6,a,Color(0.65,0.48,0.38,a),1,g.menu_t*10.0+i,true)
+	for i in range(4): _robot(g,W*(0.22+i*0.21),H*0.72,a,true,g.menu_t*0.6+i,0.0)
+	for i in range(12):
+		var sx:float=fmod(i*83.0+t*96.0,W); var sy:float=58+float((i*31)%72)
+		g.draw_line(Vector2(sx,sy),Vector2(sx+10,sy-2),Color(1.0,0.58,0.22,a*0.8),1.0)
+	# broken glass foreground
+	for i in range(9):
+		var gx:float=12+i*43; g.draw_colored_polygon(PackedVector2Array([Vector2(gx,H-8),Vector2(gx+5,H-18-(i%3)*4),Vector2(gx+9,H-7)]),Color(0.35,0.62,0.72,a*0.23))
 
 static func _scene_hero(g, W: float, H: float, a: float) -> void:
-	g.draw_rect(Rect2(0, 9, W, H - 18), Color(0.06, 0.06, 0.10, a))
-	g.draw_rect(Rect2(W * 0.5, 9, W * 0.5, H - 18), Color(0.3, 0.05, 0.08, a * 0.4))
-	_cap(g, "Ты - инженер. Оборвать вирус у ядра можешь только ты.", a, Color(0.6, 1.0, 0.7))
-	_ground(g, W, H, a)
-	var hx: float = W * 0.42
-	var hy: float = H * 0.70
-	g.draw_colored_polygon(PackedVector2Array([Vector2(hx - 4, hy), Vector2(hx + 4, hy), Vector2(hx + 40, hy + 6), Vector2(hx + 30, hy + 6)]), Color(0, 0, 0, 0.3 * a))
-	_hero(g, hx, hy, a, g.menu_t)
-	var gl: float = 0.5 + 0.5 * sin(g.menu_t * 3.0)
-	g.draw_circle(Vector2(hx + 3.0, hy - 24.0), 1.2, Color(0.6, 1.0, 1.0, a * gl))
+	# Hero silhouette against the burning factory, strong final composition.
+	g.draw_rect(Rect2(0,9,W,H-18),Color(0.025,0.03,0.055,a))
+	var cx:float=W*0.5
+	for i in range(11):
+		var bx:float=i*38.0; var bh:float=28+float((i*29)%58)
+		g.draw_rect(Rect2(bx,H*0.72-bh,32,bh),Color(0.045,0.035,0.055,a))
+		if i%3==0: g.draw_rect(Rect2(bx+8,H*0.72-bh+12,8,bh-18),Color(0.5,0.06,0.08,a*0.28))
+	var core:=Vector2(W*0.72,H*0.46); var pulse:float=0.5+0.5*sin(g.menu_t*2.4)
+	for r in [62.0,42.0,24.0]: g.draw_circle(core,r,Color(0.75,0.04,0.09,a*(0.025+0.025*pulse)))
+	for i in range(18):
+		var ex:float=core.x+sin(i*2.1+g.menu_t)*55; var ey:float=core.y-fmod(i*17.0+g.menu_t*14.0,80.0)
+		g.draw_rect(Rect2(ex,ey,1.5,2.5),Color(1.0,0.48,0.2,a*0.55))
+	_cap(g,"ПРОТОКОЛ ВОССТАНОВЛЕНИЯ // ДО ЯДРА ДОЙДЁТ ОДИН",a,Color(0.58,1.0,0.82))
+	_ground(g,W,H,a)
+	var hx:float=W*0.36; var hy:float=H*0.72
+	# long directional shadow
+	g.draw_colored_polygon(PackedVector2Array([Vector2(hx-6,hy),Vector2(hx+6,hy),Vector2(hx+92,H),Vector2(hx+58,H)]),Color(0.005,0.008,0.015,a*0.72))
+	_hero(g,hx,hy,a,g.menu_t)
+	# Nova's first tiny signal in the distance foreshadows the meeting
+	var sig:float=0.45+0.45*sin(g.menu_t*4.0)
+	g.draw_circle(Vector2(W*0.61,H*0.64),2.0,Color(0.35,0.95,1.0,a*sig)); g.draw_circle(Vector2(W*0.61,H*0.64),8.0,Color(0.35,0.95,1.0,a*0.06*sig))
+	ctext(g,"НАЙДИ NOVA",cx,H-24,12,Color(0.76,0.96,1.0,a))
 
 static func _hero(g, x: float, y: float, a: float, t: float) -> void:
 	var suit := Color(0.28, 0.52, 0.82, a)
