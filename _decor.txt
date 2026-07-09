@@ -1,0 +1,44 @@
+func _draw_decor() -> void:
+	if RoomData.is_shop(room_pos):
+		return
+	var seed_i: int = room_pos.x * 131 + room_pos.y * 977 + 7
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_i
+	var zdk: float = zone_dark.get(zone, 0.0)
+	var count: int = 2 + (seed_i % 3)
+	for i in range(count):
+		var tx: int = 2 + rng.randi() % (COLS - 4)
+		var ty: int = 2 + rng.randi() % (ROWS - 4)
+		if tile_at(tx, ty) != ".":
+			continue
+		var cx: float = tx * TILE + TILE * 0.5
+		var cy: float = ty * TILE + TILE * 0.5
+		var kn: int = rng.randi() % 3
+		if kn == 0:
+			_decor_crate(cx, cy)
+		elif kn == 1:
+			_decor_deadbot(cx, cy, rng.randf() * TAU)
+		elif zdk > 0.3:
+			_decor_corpse(cx, cy)
+		else:
+			_decor_crate(cx, cy)
+
+func _decor_crate(cx: float, cy: float) -> void:
+	draw_rect(Rect2(cx-4, cy-3, 8, 7), Color(0.42,0.3,0.16))
+	draw_rect(Rect2(cx-4, cy-3, 8, 1), Color(0.55,0.4,0.22))
+	draw_line(Vector2(cx-4,cy-3), Vector2(cx+4,cy+4), Color(0.3,0.2,0.1), 1.0)
+	draw_line(Vector2(cx+4,cy-3), Vector2(cx-4,cy+4), Color(0.3,0.2,0.1), 1.0)
+
+func _decor_deadbot(cx: float, cy: float, a: float) -> void:
+	draw_set_transform(Vector2(cx,cy), a, Vector2.ONE)
+	draw_rect(Rect2(-4,-3,8,6), Color(0.3,0.32,0.36))
+	draw_rect(Rect2(-4,-3,8,1), Color(0.4,0.42,0.46))
+	draw_circle(Vector2(1,0), 1.2, Color(0.15,0.15,0.18))
+	draw_rect(Rect2(4,-1,3,2), Color(0.25,0.27,0.3))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	draw_rect(Rect2(cx-7, cy+2, 4, 1), Color(0.1,0.1,0.12,0.5))
+
+func _decor_corpse(cx: float, cy: float) -> void:
+	draw_rect(Rect2(cx-5, cy-1, 10, 3), Color(0.35,0.2,0.2))
+	draw_circle(Vector2(cx-5, cy), 1.6, Color(0.7,0.55,0.45))
+	draw_rect(Rect2(cx-2, cy+2, 8, 1), Color(0.3,0.05,0.05,0.6))

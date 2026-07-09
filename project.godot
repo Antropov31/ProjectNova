@@ -1,0 +1,39 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Project Nova Mobile"
+run/main_scene="res://Main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://icon.svg"
+boot_splash/show_image=false
+boot_splash/bg_color=Color(0.04, 0.05, 0.08, 1)
+
+[display]
+
+window/handheld/orientation=1
+window/size/viewport_width=352
+window/size/viewport_height=192
+window/size/window_width_override=1152
+window/size/window_height_override=648
+window/stretch/mode="viewport"
+window/stretch/scale_mode="integer"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+renderer/rendering_method="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.04, 0.05, 0.08, 1)
+
+[input_devices]
+
+pointing/emulate_mouse_from_touch=false
+pointing/emulate_touch_from_mouse=true

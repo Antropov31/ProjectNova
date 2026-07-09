@@ -1,0 +1,6 @@
+.godot/
+build/
+*.bak
+*.tmp
+*.py
+android/
