@@ -29,6 +29,7 @@ window/stretch/scale_mode="integer"
 
 [rendering]
 
+textures/vram_compression/import_etc2_astc=true
 textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.04, 0.05, 0.08, 1)
