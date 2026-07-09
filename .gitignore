@@ -4,3 +4,4 @@ build/
 *.tmp
 *.py
 android/
+$null`npatch*.ps1
